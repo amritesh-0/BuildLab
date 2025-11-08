@@ -1,0 +1,26 @@
+{
+  "name": "buildlab-mvp",
+  "version": "1.0.0",
+  "description": "BuildLab - AI-Powered No-Code Platform for Building Full-Stack Web Applications",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -o",
+    "start": "npx http-server . -p 3000",
+    "serve": "npx http-server . -p 3000 -o"
+  },
+  "keywords": [
+    "no-code",
+    "ai",
+    "web-builder",
+    "drag-and-drop",
+    "full-stack"
+  ],
+  "author": "BuildLab Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/buildlab-mvp.git"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
