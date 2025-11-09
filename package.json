@@ -22,5 +22,7 @@
     "url": "https://github.com/yourusername/buildlab-mvp.git"
   },
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.3"
+  }
 }

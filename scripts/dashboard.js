@@ -24,17 +24,43 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initialize dashboard
-function initializeDashboard() {
-    // Check if user is logged in
-    const user = JSON.parse(localStorage.getItem('buildlab_user') || 'null');
-    
-    if (!user) {
-        // Redirect to login if not authenticated
-        window.location.href = 'index.html';
+async function initializeDashboard() {
+    try {
+        // Check Supabase authentication state
+        const { data: { session }, error } = await window.supabaseAuth.getCurrentSession();
+
+        if (error) {
+            console.error('Session check error:', error);
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!session) {
+            console.log('No active session, redirecting to login...');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // User is authenticated
+        const user = session.user;
+        dashboardState.user = {
+            email: user.email,
+            name: user.user_metadata?.name || user.email.split('@')[0],
+            loggedIn: true,
+            timestamp: Date.now(),
+            supabase_id: user.id,
+            created_at: user.created_at,
+            last_sign_in: user.last_sign_in_at
+        };
+
+        // Store in localStorage for UI purposes
+        localStorage.setItem('buildlab_user', JSON.stringify(dashboardState.user));
+
+    } catch (error) {
+        console.error('Auth check error:', error);
+        window.location.href = 'login.html';
         return;
     }
-    
-    dashboardState.user = user;
     
     // Load or initialize notifications from localStorage
     loadStoredNotifications();
@@ -60,9 +86,27 @@ function initializeDashboard() {
     loadDeployments();
     loadAnalytics();
     loadTeamActivity();
-    
+
     // Start activity tracking
     startActivityTracking();
+
+    // Set up auth state listener for real-time updates
+    const { data: { subscription } } = window.supabaseAuth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event, session ? 'session active' : 'no session');
+
+        if (event === 'SIGNED_OUT' || !session) {
+            console.log('Auth state changed: signed out, redirecting...');
+            localStorage.removeItem('buildlab_user');
+            window.location.href = 'login.html';
+        } else if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully');
+        } else if (event === 'SIGNED_IN') {
+            console.log('User signed in');
+        }
+    });
+
+    // Store subscription for cleanup if needed
+    dashboardState.authSubscription = subscription;
 }
 
 // Load user data
@@ -196,10 +240,10 @@ function setupEventListeners() {
     }
     
     // Logout
-    const logoutBtn = document.querySelector('.nav-item.logout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
+    const logoutBtns = document.querySelectorAll('.nav-item.logout, .dropdown-item[href="#"]');
+    logoutBtns.forEach(btn => {
+        btn.addEventListener('click', handleLogout);
+    });
 
     // Notifications: mark all as read button
     const markAllBtn = document.querySelector('#notificationsPanel .btn-link');
@@ -424,12 +468,29 @@ function handleSearch(e) {
 }
 
 // Handle logout
-function handleLogout(e) {
+async function handleLogout(e) {
     e.preventDefault();
-    
+
     if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('buildlab_user');
-        window.location.href = 'index.html';
+        try {
+            // Sign out from Supabase
+            const { error } = await window.supabaseAuth.signOut();
+
+            if (error) {
+                console.error('Logout error:', error);
+                alert('Error logging out. Please try again.');
+                return;
+            }
+
+            // Clear local storage
+            localStorage.removeItem('buildlab_user');
+
+            // Redirect to login
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error logging out. Please try again.');
+        }
     }
 }
 

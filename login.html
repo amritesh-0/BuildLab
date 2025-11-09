@@ -6,6 +6,8 @@
     <title>Login - BuildLab</title>
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
     <style>
         * {
             margin: 0;
@@ -487,42 +489,73 @@
     </div>
 
     <script>
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
-            
+
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
-            
+
             console.log('Login attempt:', { username });
-            
+
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.textContent = '';
             loginBtn.disabled = true;
-            
-            // Simulate API call
-            setTimeout(() => {
-                if (username && password) {
-                    // Store user data
-                    localStorage.setItem('buildlab_user', JSON.stringify({
-                        email: username,
-                        name: username,
-                        loggedIn: true,
-                        timestamp: Date.now()
-                    }));
-                    
+
+            try {
+                // Validate input
+                if (!username || !password) {
+                    throw new Error('Please enter both email and password');
+                }
+
+                // Use Supabase authentication
+                const { data, error } = await window.supabaseAuth.signIn(username, password);
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user && data.session) {
                     console.log('✅ Login successful, redirecting...');
-                    
+
+                    // Store user data in localStorage for UI purposes
+                    const userData = {
+                        email: data.user.email,
+                        name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+                        loggedIn: true,
+                        timestamp: Date.now(),
+                        supabase_id: data.user.id,
+                        created_at: data.user.created_at,
+                        last_sign_in: data.user.last_sign_in_at
+                    };
+                    localStorage.setItem('buildlab_user', JSON.stringify(userData));
+
                     // Redirect to dashboard
                     window.location.href = 'dashboard.html';
                 } else {
-                    alert('Please enter valid credentials');
-                    loginBtn.classList.remove('loading');
-                    loginBtn.textContent = 'Login';
-                    loginBtn.disabled = false;
+                    throw new Error('Login failed - invalid credentials');
                 }
-            }, 1500);
+            } catch (error) {
+                console.error('Login error:', error);
+
+                // Provide user-friendly error messages
+                let errorMessage = 'Login failed. Please try again.';
+                if (error.message.includes('Invalid login credentials')) {
+                    errorMessage = 'Invalid email or password. Please check your credentials.';
+                } else if (error.message.includes('Email not confirmed')) {
+                    errorMessage = 'Please check your email and click the confirmation link before logging in.';
+                } else if (error.message.includes('Too many requests')) {
+                    errorMessage = 'Too many login attempts. Please wait a few minutes before trying again.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+
+                alert(errorMessage);
+                loginBtn.classList.remove('loading');
+                loginBtn.textContent = 'Login';
+                loginBtn.disabled = false;
+            }
         }
 
         function handleGoogleLogin() {
