@@ -18,6 +18,8 @@
 
 BuildLab is a revolutionary AI-powered no-code platform that enables anyone—from entrepreneurs to students—to create production-ready full-stack web applications without writing a single line of code. With an intuitive drag-and-drop builder, real-time AI code generation powered by OpenAI GPT-3.5, and a smart dashboard with activity tracking, BuildLab transforms your ideas into reality.
 
+link-"https://build-lab-muj.vercel.app/"
+
 ### Why BuildLab?
 
 - 💡 **No Coding Required** - Build complete applications with drag & drop
@@ -610,5 +612,6 @@ ai_usage_count = "5"
 [⬆ Back to Top](#-buildlab---ai-powered-no-code-platform)
 
 </div>
+
 
 
