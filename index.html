@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuildLab - Visual Full-Stack Platform</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
+    <link rel="icon" href="assets/favicon.png" type="image/png">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/animations.css">
     
@@ -406,6 +406,71 @@
         </div>
     </footer>
 
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content login-modal-content">
+            <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+            
+            <div class="login-modal-card">
+                <div class="login-modal-header">
+                    <div class="login-modal-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="login-modal-title">Welcome to BuildLab</h2>
+                    <p class="login-modal-subtitle">Please sign in to start building</p>
+                </div>
+
+                <form id="quickLoginForm" onsubmit="handleQuickLogin(event)" class="login-modal-form">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="quickUsername"
+                            placeholder="Enter your username"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            class="form-input" 
+                            id="quickPassword"
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-remember">
+                        <input type="checkbox" id="quickRemember">
+                        <label for="quickRemember">Remember Me</label>
+                    </div>
+
+                    <button type="submit" class="login-modal-button" id="quickLoginBtn">
+                        <span>Sign In</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
+                    <div class="login-modal-divider">or</div>
+
+                    <div class="login-modal-links">
+                        <a href="login.html" class="login-modal-link">Go to full login page</a>
+                        <span>•</span>
+                        <a href="signup.html" class="login-modal-link">Create an account</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Builder Modal -->
     <div id="builderModal" class="modal">
         <div class="modal-content builder-container">
@@ -586,6 +651,7 @@
     </div>
 
     <script src="scripts/GhostCursor.js"></script>
+    <script src="scripts/ai-assistant.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

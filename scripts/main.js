@@ -1,16 +1,5 @@
 // Main JavaScript for BuildLab Platform
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-
-// Template responses for fallback mode
-const templateResponses = {
-    'login': 'I can help you create a login form! Here\'s what you need:\n\n```html\n<form>\n  <input type="email" placeholder="Email">\n  <input type="password" placeholder="Password">\n  <button>Login</button>\n</form>\n```\n\nDrag Container, Text, and Button components to build this!',
-    'form': 'Forms are great! Try dragging:\n1. Container (for structure)\n2. Text components (for labels)\n3. Button (for submit)\n\nThen click Generate Code!',
-    'button': 'Buttons are easy! Just drag a Button component from the sidebar. You can customize it in the properties panel.',
-    'default': 'I can help you with:\n• Creating forms and layouts\n• Adding buttons and text\n• Generating HTML/CSS/JavaScript\n• Backend API design\n• Database schemas\n\nWhat would you like to build?'
-};
-
 // State Management
 const state = {
     currentView: 'design',
@@ -28,7 +17,8 @@ const state = {
         css: '',
         javascript: '',
         backend: '',
-        database: ''
+        database: '',
+        full: ''
     },
     projectConfig: {
         name: 'My App',
@@ -39,15 +29,19 @@ const state = {
     }
 };
 
+// Make state globally accessible for ai-assistant.js
+window.state = state;
+
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
     initializeGhostCursor();
     initializeAnimations();
     initializeScrollEffects();
     initializeBuilderInteractions();
-    initializeChat();
+    // Chat is initialized by ai-assistant.js
     addMouseTrackingEffects();
     checkLoginAndAutoOpen();
+    updateNavigation(); // Update navigation based on login status
 });
 
 // Initialize Ghost Cursor
@@ -174,29 +168,159 @@ function addMouseTrackingEffects() {
 
 // Builder Modal Functions
 function startBuilding() {
-    console.log('startBuilding function called!');
-    const modal = document.getElementById('builderModal');
+    console.log('🚀 Start Building clicked!');
     
-    if (!modal) {
-        console.error('Modal element not found!');
+    // Check if user is logged in
+    const user = localStorage.getItem('buildlab_user');
+    let isLoggedIn = false;
+    
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            isLoggedIn = userData.loggedIn === true;
+            console.log('User login status:', isLoggedIn);
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+        }
+    }
+    
+    if (isLoggedIn) {
+        // User is logged in, open builder directly
+        console.log('✅ User logged in, opening builder...');
+        openBuilder();
+    } else {
+        // User not logged in, show login modal first
+        console.log('🔐 User not logged in, showing login modal...');
+        showLoginModal();
+    }
+}
+
+function showLoginModal() {
+    const loginModal = document.getElementById('loginModal');
+    
+    if (!loginModal) {
+        console.error('❌ Login modal not found!');
+        return;
+    }
+    
+    console.log('📋 Opening login modal...');
+    loginModal.classList.add('active');
+    loginModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Add entrance animation
+    const modalContent = loginModal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.style.animation = 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    }
+}
+
+function closeLoginModal() {
+    console.log('Closing login modal...');
+    const loginModal = document.getElementById('loginModal');
+    
+    if (!loginModal) {
+        console.error('Login modal not found!');
+        return;
+    }
+    
+    const modalContent = loginModal.querySelector('.modal-content');
+    
+    // Add exit animation
+    if (modalContent) {
+        modalContent.style.animation = 'slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    }
+    
+    setTimeout(() => {
+        loginModal.classList.remove('active');
+        loginModal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('✅ Login modal closed');
+    }, 300);
+}
+
+function handleQuickLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('quickUsername').value;
+    const password = document.getElementById('quickPassword').value;
+    const loginBtn = document.getElementById('quickLoginBtn');
+    
+    console.log('🔑 Quick login attempt:', { username });
+    
+    // Show loading state
+    loginBtn.classList.add('loading');
+    loginBtn.disabled = true;
+    
+    // Simulate API call (replace with actual authentication)
+    setTimeout(() => {
+        if (username && password) {
+            // Store user data
+            const userData = {
+                email: username,
+                name: username,
+                plan: 'Pro Plan',
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+                loggedIn: true,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('buildlab_user', JSON.stringify(userData));
+            console.log('✅ Login successful!');
+            
+            // Close login modal
+            closeLoginModal();
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 400);
+        } else {
+            alert('Please enter valid credentials');
+            loginBtn.classList.remove('loading');
+            loginBtn.disabled = false;
+        }
+    }, 1500);
+}
+
+function openBuilder() {
+    console.log('🎨 Opening builder...');
+    const builderModal = document.getElementById('builderModal');
+    
+    if (!builderModal) {
+        console.error('❌ Builder modal not found!');
         alert('Builder modal not found. Please refresh the page.');
         return;
     }
     
     console.log('Modal found, activating...');
-    modal.classList.add('active');
-    modal.style.display = 'flex';
+    builderModal.classList.add('active');
+    builderModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
     // Add entrance animation
-    const modalContent = modal.querySelector('.modal-content');
+    const modalContent = builderModal.querySelector('.modal-content');
     if (modalContent) {
         modalContent.style.animation = 'slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
     }
     
     // Initialize canvas
     initializeCanvas();
-    console.log('Builder modal activated successfully!');
+    
+    // Welcome message with user data
+    const user = localStorage.getItem('buildlab_user');
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            setTimeout(() => {
+                addChatMessage(`Welcome back, ${userData.name}! 🎉\n\nReady to build something amazing? Let's get started!`, 'ai');
+            }, 500);
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+        }
+    }
+    
+    console.log('✅ Builder modal activated successfully!');
 }
 
 function closeBuilder() {
@@ -473,203 +597,18 @@ function initializeCanvas() {
         });
     }
     
-    // Welcome message
+    // Welcome message - Initialize chat
     setTimeout(() => {
+        // Chat initialization is now handled by ai-assistant.js
+        if (typeof initializeChat === 'function') {
+            initializeChat();
+        }
         addChatMessage('Welcome to BuildLab! 👋\n\nI\'m your AI assistant. Here\'s how to get started:\n\n1️⃣ Configure your project (name, backend, database)\n2️⃣ Drag components from above to the canvas\n3️⃣ Tell me what you want to build\n4️⃣ Click "Generate Code" when ready\n5️⃣ Preview and export your app\n\nTry saying: "Create a login form with email and password"\n\nWhat would you like to build today?', 'ai');
     }, 500);
 }
 
-// Chat Functionality
-function initializeChat() {
-    const chatInput = document.querySelector('.chat-input input');
-    const sendBtn = document.querySelector('.send-btn');
-    
-    if (chatInput && sendBtn) {
-        sendBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    }
-}
-
-async function sendMessage() {
-    const input = document.querySelector('.chat-input input');
-    const message = input.value.trim();
-    
-    if (message) {
-        // Add user message
-        addChatMessage(message, 'user');
-        input.value = '';
-        
-        // Show typing indicator
-        const typingIndicator = addChatMessage('Thinking...', 'ai', true);
-        
-        try {
-            // Call OpenAI API
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: 'gpt-3.5-turbo',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are an AI assistant for BuildLab, a no-code platform. Help users:
-1. Design web applications visually
-2. Generate HTML, CSS, JavaScript code
-3. Create backend APIs with Node.js/Express
-4. Design database schemas (MongoDB/PostgreSQL)
-5. Implement authentication systems
-6. Suggest UI/UX improvements
-Be concise, helpful, and provide code examples when requested. Current project context: ${JSON.stringify(state.projectConfig)}`
-                        },
-                        ...state.chat.messages.slice(-5).map(msg => ({
-                            role: msg.sender === 'user' ? 'user' : 'assistant',
-                            content: msg.text
-                        })),
-                        {
-                            role: 'user',
-                            content: message
-                        }
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 500
-                })
-            });
-            
-            // Remove typing indicator
-            typingIndicator.remove();
-            
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('API Error Details:', errorData);
-                throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-            }
-            
-            const data = await response.json();
-            const aiResponse = data.choices[0].message.content;
-            
-            // Add AI response
-            addChatMessage(aiResponse, 'ai');
-            
-            // Check if AI suggested code generation
-            if (aiResponse.toLowerCase().includes('code') || aiResponse.toLowerCase().includes('generate')) {
-                setTimeout(() => {
-                    addChatMessage('Would you like me to generate the code for this? Type "generate code" or click the 📝 Generate Code button.', 'ai');
-                }, 500);
-            }
-            
-        } catch (error) {
-            typingIndicator.remove();
-            console.error('AI Chat Error:', error);
-            
-            // More helpful error messages
-            let errorMessage = 'Sorry, I encountered an error. ';
-            
-            if (error.message.includes('401')) {
-                errorMessage += 'The API key appears to be invalid. Please check your OpenAI API key.';
-            } else if (error.message.includes('429')) {
-                errorMessage += 'Rate limit exceeded. Please wait a moment and try again.';
-            } else if (error.message.includes('Failed to fetch')) {
-                errorMessage += 'Network error. Please check your internet connection.';
-            } else if (error.message.includes('quota')) {
-                errorMessage += 'API quota exceeded. Please check your OpenAI account.';
-            } else {
-                errorMessage += `Error: ${error.message}`;
-            }
-            
-            addChatMessage(errorMessage, 'ai');
-            
-            // Offer fallback
-            setTimeout(() => {
-                addChatMessage('Meanwhile, I can still help! Try:\n• Drag components to the canvas\n• Click "Generate Code" to see what you\'ve built\n• Ask me for code examples (I\'ll provide templates)', 'ai');
-                
-                // Try fallback response
-                const fallbackResponse = getFallbackResponse(message);
-                if (fallbackResponse) {
-                    setTimeout(() => {
-                        addChatMessage(fallbackResponse, 'ai');
-                    }, 1000);
-                }
-            }, 500);
-        }
-    }
-}
-
-function getFallbackResponse(message) {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('login') || lowerMessage.includes('sign in')) {
-        return templateResponses.login;
-    } else if (lowerMessage.includes('form')) {
-        return templateResponses.form;
-    } else if (lowerMessage.includes('button')) {
-        return templateResponses.button;
-    } else if (lowerMessage.includes('help')) {
-        return templateResponses.default;
-    }
-    
-    return null;
-}
-
-function addChatMessage(text, sender, isTyping = false) {
-    const chatMessages = document.querySelector('.chat-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${sender}`;
-    
-    if (isTyping) {
-        messageDiv.classList.add('typing');
-    }
-    
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    avatar.textContent = sender === 'ai' ? '🤖' : '👤';
-    
-    const content = document.createElement('div');
-    content.className = 'message-content';
-    
-    // Check if text contains code blocks
-    if (text.includes('```')) {
-        content.innerHTML = formatCodeBlocks(text);
-    } else {
-        content.textContent = text;
-    }
-    
-    messageDiv.appendChild(avatar);
-    messageDiv.appendChild(content);
-    
-    chatMessages.appendChild(messageDiv);
-    
-    // Smooth scroll to bottom
-    chatMessages.scrollTo({
-        top: chatMessages.scrollHeight,
-        behavior: 'smooth'
-    });
-    
-    // Add state (only if not typing indicator)
-    if (!isTyping) {
-        state.chat.messages.push({ text, sender, timestamp: Date.now() });
-    }
-    
-    return messageDiv;
-}
-
-function formatCodeBlocks(text) {
-    return text.replace(/```(\w+)?\n([\s\S]+?)```/g, (match, lang, code) => {
-        return `<pre><code class="language-${lang || 'text'}">${escapeHtml(code.trim())}</code></pre>`;
-    });
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// Note: Chat, AI, and Code Generation functions are now in ai-assistant.js
+// This includes: sendMessage, addChatMessage, generateCode, testAPIKey, etc.
 
 // Ripple Effect for Buttons
 function addRippleEffect(element) {
@@ -749,243 +688,85 @@ setTimeout(animateCodePreview, 1500);
 // Export functions for global access
 window.startBuilding = startBuilding;
 window.closeBuilder = closeBuilder;
+window.closeLoginModal = closeLoginModal;
+window.handleQuickLogin = handleQuickLogin;
 window.showDemo = showDemo;
 window.deleteComponent = deleteComponent;
-window.generateCode = generateCode;
-window.previewApp = previewApp;
-window.exportCode = exportCode;
-window.deployApp = deployApp;
-window.testAPIKey = testAPIKey;
-
-// Test API Key function
-async function testAPIKey() {
-    addChatMessage('Testing API connection...', 'ai', true);
-    
-    try {
-        const response = await fetch('https://api.openai.com/v1/models', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            }
-        });
-        
-        document.querySelectorAll('.chat-message.typing').forEach(el => el.remove());
-        
-        if (response.ok) {
-            addChatMessage('✅ API Key is valid! Connection successful.', 'ai');
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            addChatMessage(`❌ API Key test failed: ${response.status}\n${errorData.error?.message || 'Please check your API key.'}`, 'ai');
-        }
-    } catch (error) {
-        document.querySelectorAll('.chat-message.typing').forEach(el => el.remove());
-        addChatMessage(`❌ Connection failed: ${error.message}\n\nPlease check:\n1. Your internet connection\n2. API key validity\n3. OpenAI service status`, 'ai');
-    }
-}
-
-// Code Generation Functions
-async function generateCode() {
-    const components = state.canvas.components;
-    
-    if (components.length === 0) {
-        alert('Please add components to the canvas first!');
-        return;
-    }
-    
-    const canvasArea = document.getElementById('canvasArea');
-    const canvasHTML = canvasArea.innerHTML;
-    
-    // Show loading
-    const loadingMsg = addChatMessage('Generating production-ready code...', 'ai', true);
-    
-    try {
-        const prompt = `Generate production-ready code for a web application based on these components:
-${JSON.stringify(components, null, 2)}
-
-Canvas HTML structure:
-${canvasHTML}
-
-Project config:
-${JSON.stringify(state.projectConfig, null, 2)}
-
-Please provide:
-1. Clean HTML structure
-2. Professional CSS styling
-3. JavaScript functionality
-4. ${state.projectConfig.hasBackend ? 'Node.js/Express backend API code' : ''}
-5. ${state.projectConfig.hasDatabase ? 'Database schema (MongoDB)' : ''}
-6. ${state.projectConfig.hasAuth ? 'JWT authentication implementation' : ''}
-
-Format each section with proper code blocks.`;
-
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are an expert full-stack developer. Generate clean, production-ready code with best practices.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                temperature: 0.3,
-                max_tokens: 2000
-            })
-        });
-        
-        loadingMsg.remove();
-        
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const generatedCode = data.choices[0].message.content;
-        state.generatedCode.full = generatedCode;
-        
-        // Add to chat
-        addChatMessage(generatedCode, 'ai');
-        addChatMessage('Code generated successfully! You can now preview, edit, or export it.', 'ai');
-         // Show code view button
-        showCodeViewButton();
-        
-    } catch (error) {
-        loadingMsg.remove();
-        console.error('Code Generation Error:', error);
-        addChatMessage('Error generating code. Please try again.', 'ai');
-    }
-}
-
-function showCodeViewButton() {
-    const toolbarGroup = document.querySelector('.canvas-toolbar .toolbar-group');
-    const codeViewBtn = document.createElement('button');
-    codeViewBtn.className = 'toolbar-btn btn-success';
-    codeViewBtn.textContent = '📝 View Code';
-    codeViewBtn.onclick = showCodeModal;
-    toolbarGroup.appendChild(codeViewBtn);
-}
-
-function showCodeModal() {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: auto;">
-            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-            <div style="padding: 2rem;">
-                <h2 style="margin-bottom: 1.5rem;">Generated Code</h2>
-                <div class="code-tabs" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color);">
-                    <button class="code-tab active" data-tab="full">Full Code</button>
-                    <button class="code-tab" data-tab="html">HTML</button>
-                    <button class="code-tab" data-tab="css">CSS</button>
-                    <button class="code-tab" data-tab="js">JavaScript</button>
-                </div>
-                <div class="code-content">
-                    <pre style="background: var(--bg-tertiary); padding: 1.5rem; border-radius: var(--radius-lg); overflow: auto; max-height: 500px;"><code>${escapeHtml(state.generatedCode.full || 'No code generated yet')}</code></pre>
-                </div>
-                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                    <button class="btn-primary" onclick="copyCode()">📋 Copy Code</button>
-                    <button class="btn-primary" onclick="downloadCode()">💾 Download</button>
-                    <button class="btn-primary" onclick="previewApp()">👁️ Preview</button>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-}
-
-function copyCode() {
-    const code = state.generatedCode.full;
-    navigator.clipboard.writeText(code).then(() => {
-        alert('Code copied to clipboard!');
-    });
-}
-
-function downloadCode() {
-    const code = state.generatedCode.full;
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${state.projectConfig.name.replace(/\s+/g, '-').toLowerCase()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-function previewApp() {
-    const previewWindow = window.open('', '_blank');
-    previewWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Preview - ${state.projectConfig.name}</title>
-            <style>
-                body { margin: 0; padding: 20px; font-family: system-ui; }
-                pre { background: #f5f5f5; padding: 15px; border-radius: 8px; overflow: auto; }
-            </style>
-        </head>
-        <body>
-            <h1>App Preview</h1>
-            <p>Generated code preview:</p>
-            <pre>${escapeHtml(state.generatedCode.full)}</pre>
-        </body>
-        </html>
-    `);
-}
-
-function exportCode() {
-    if (!state.generatedCode.full) {
-        alert('Please generate code first!');
-        return;
-    }
-    
-    // Create ZIP file structure simulation
-    const files = {
-        'index.html': extractCodeSection(state.generatedCode.full, 'html'),
-        'styles.css': extractCodeSection(state.generatedCode.full, 'css'),
-        'script.js': extractCodeSection(state.generatedCode.full, 'javascript')
-    };
-    
-    if (state.projectConfig.hasBackend) {
-        files['server.js'] = extractCodeSection(state.generatedCode.full, 'backend');
-    }
-    
-    if (state.projectConfig.hasDatabase) {
-        files['models.js'] = extractCodeSection(state.generatedCode.full, 'database');
-    }
-    downloadCode();
-}
-
-function extractCodeSection(fullCode, section) {
-    const regex = new RegExp(`\`\`\`${section}\\n([\\s\\S]*?)\`\`\``, 'i');
-    const match = fullCode.match(regex);
-    return match ? match[1] : '';
-}
-
-async function deployApp() {
-    alert('Deployment feature:\n\n1. Code will be pushed to GitHub\n2. Deployed to Vercel/Netlify\n3. Backend deployed to Railway/Render\n4. Database hosted on MongoDB Atlas\n\nThis feature requires backend integration.');
-}
+// Note: AI functions (generateCode, previewApp, exportCode, deployApp, testAPIKey) 
+// are now exported from ai-assistant.js
 
 console.log('BuildLab Platform Initialized ✨');
+
+// Update navigation based on login status
+function updateNavigation() {
+    const user = localStorage.getItem('buildlab_user');
+    const signInBtn = document.querySelector('.btn-secondary');
+    
+    if (user) {
+        try {
+            const userData = JSON.parse(user);
+            if (userData.loggedIn && signInBtn) {
+                // Replace Sign In with user info and logout
+                signInBtn.textContent = `Hi, ${userData.name.split('@')[0]}`;
+                signInBtn.onclick = () => {
+                    if (confirm('Do you want to logout?')) {
+                        logout();
+                    }
+                };
+                signInBtn.style.cursor = 'pointer';
+            }
+        } catch (error) {
+            console.error('Error updating navigation:', error);
+        }
+    }
+}
+
+// Logout function
+function logout() {
+    console.log('🚪 Logging out...');
+    localStorage.removeItem('buildlab_user');
+    
+    // Close any open modals
+    const builderModal = document.getElementById('builderModal');
+    const loginModal = document.getElementById('loginModal');
+    
+    if (builderModal) {
+        builderModal.classList.remove('active');
+        builderModal.style.display = 'none';
+    }
+    
+    if (loginModal) {
+        loginModal.classList.remove('active');
+        loginModal.style.display = 'none';
+    }
+    
+    document.body.style.overflow = '';
+    
+    // Refresh the page to reset state
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 300);
+    
+    console.log('✅ Logged out successfully');
+}
+
+// Export logout function
+window.logout = logout;
 
 // Check login state and auto-open builder
 function checkLoginAndAutoOpen() {
     const urlParams = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
     const user = localStorage.getItem('buildlab_user');
     
     console.log('🔍 Checking login state...');
     console.log('URL params:', window.location.search);
+    console.log('Hash:', hash);
     console.log('Builder param:', urlParams.get('builder'));
     console.log('User data:', user);
     
-    if (urlParams.get('builder') === 'open' && user) {
+    // Check if hash is #builder or URL param is builder=open
+    if ((hash === '#builder' || urlParams.get('builder') === 'open') && user) {
         try {
             const userData = JSON.parse(user);
             console.log('✅ Parsed user data:', userData);
@@ -994,14 +775,7 @@ function checkLoginAndAutoOpen() {
                 console.log('🚀 Auto-opening builder...');
                 // Auto open builder after login
                 setTimeout(() => {
-                    const modal = document.getElementById('builderModal');
-                    if (modal) {
-                        modal.style.display = 'flex';
-                        console.log('✅ Builder modal opened');
-                        addChatMessage(`Welcome back, ${userData.name}! 👋 Ready to build something amazing?`, 'ai');
-                    } else {
-                        console.error('❌ Builder modal not found');
-                    }
+                    openBuilder();
                 }, 800);
             }
         } catch (error) {

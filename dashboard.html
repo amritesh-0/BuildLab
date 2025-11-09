@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - BuildLab</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="dashboard-body">
+    <!-- Animated Background -->
+    <div class="dashboard-background">
+        <div class="particle-container"></div>
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="logo-text">BuildLab</span>
+            </div>
+            <button id="sidebarToggle" class="sidebar-toggle">
+                <i data-lucide="panel-left-close"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                <i data-lucide="home"></i>
+                <span class="nav-label">Dashboard</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#projects" class="nav-item" data-page="projects">
+                <i data-lucide="lightbulb"></i>
+                <span class="nav-label">My Projects</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#backend" class="nav-item" data-page="backend">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Backend / APIs</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#database" class="nav-item" data-page="database">
+                <i data-lucide="database"></i>
+                <span class="nav-label">Database Models</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#ai-studio" class="nav-item" data-page="ai-studio">
+                <i data-lucide="bot"></i>
+                <span class="nav-label">AI Studio</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#deployments" class="nav-item" data-page="deployments">
+                <i data-lucide="rocket"></i>
+                <span class="nav-label">Deployments</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#teams" class="nav-item" data-page="teams">
+                <i data-lucide="users"></i>
+                <span class="nav-label">Teams & Roles</span>
+                <div class="active-indicator"></div>
+            </a>
+            <a href="#templates" class="nav-item" data-page="templates">
+                <i data-lucide="sparkles"></i>
+                <span class="nav-label">Templates</span>
+                <div class="active-indicator"></div>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#settings" class="nav-item" data-page="settings">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Settings</span>
+            </a>
+            <a href="#" class="nav-item logout" onclick="handleLogout(event)">
+                <i data-lucide="log-out"></i>
+                <span class="nav-label">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav">
+            <div class="search-container">
+                <i data-lucide="search"></i>
+                <input type="text" placeholder="Search projects, APIs, or ask AI..." class="search-input">
+            </div>
+
+            <div class="top-nav-actions">
+                <!-- Theme Toggle -->
+                <button class="icon-btn theme-toggle" onclick="toggleTheme()">
+                    <i data-lucide="moon" id="themeIcon"></i>
+                </button>
+
+                <!-- AI Chat -->
+                <button class="icon-btn" onclick="toggleAIDrawer()">
+                    <i data-lucide="message-circle"></i>
+                    <span class="badge">2</span>
+                </button>
+
+                <!-- Notifications -->
+                <button class="icon-btn" id="notificationsBtn" onclick="toggleNotifications()">
+                    <i data-lucide="bell"></i>
+                    <span class="badge">5</span>
+                </button>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown">
+                    <button class="profile-btn" onclick="toggleProfileMenu()">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="Profile" class="profile-avatar">
+                        <div class="profile-info">
+                            <span class="profile-name" id="profileName">User</span>
+                            <span class="profile-plan">Free Plan</span>
+                        </div>
+                        <i data-lucide="chevron-down"></i>
+                    </button>
+
+                    <div class="dropdown-menu" id="profileMenu">
+                        <a href="#profile" class="dropdown-item">
+                            <i data-lucide="user"></i>
+                            <span>View Profile</span>
+                        </a>
+                        <a href="#settings" class="dropdown-item">
+                            <i data-lucide="settings"></i>
+                            <span>Account Settings</span>
+                        </a>
+                        <a href="#billing" class="dropdown-item">
+                            <i data-lucide="credit-card"></i>
+                            <span>Billing</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" onclick="handleLogout(event)">
+                            <i data-lucide="log-out"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-content" id="mainContent">
+            <!-- Dashboard Home Page -->
+            <div id="dashboardPage" class="page-content active">
+                <!-- Hero Section -->
+                <section class="hero-section">
+                    <div class="hero-content">
+                        <h1 class="hero-title typewriter" id="welcomeText">Welcome back, <span class="highlight"></span></h1>
+                        <p class="hero-subtitle">You've built <strong>3 projects</strong>, deployed <strong>2</strong>, and have <strong>1</strong> in draft.</p>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="btn-primary" onclick="openBuilder()">
+                            <i data-lucide="plus-circle"></i>
+                            <span>New Project</span>
+                        </button>
+                        <button class="btn-secondary" onclick="window.open('https://www.figma.com/community/website-templates/blog?resource_type=mixed&editor_type=all&price=all&sort_by=all_time&creators=all', '_blank')">
+                            <i data-lucide="sparkles"></i>
+                            <span>Browse Templates</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Widgets Grid -->
+                <div class="widgets-grid">
+                    <!-- My Projects Widget -->
+                    <div class="widget widget-large">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="lightbulb"></i>
+                                <h3>My Projects</h3>
+                            </div>
+                            <button class="btn-link">View All →</button>
+                        </div>
+                        <div class="widget-content">
+                            <div class="project-grid" id="projectGrid">
+                                <!-- Projects will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Widget -->
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="zap"></i>
+                                <h3>Quick Actions</h3>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="openBuilder()">
+                                    <i data-lucide="folder-plus"></i>
+                                    <span>New Project</span>
+                                </button>
+                                <button class="action-btn" onclick="generateAPI()">
+                                    <i data-lucide="code"></i>
+                                    <span>Generate API</span>
+                                </button>
+                                <button class="action-btn" onclick="createModel()">
+                                    <i data-lucide="database"></i>
+                                    <span>Create Model</span>
+                                </button>
+                                <button class="action-btn" onclick="deployApp()">
+                                    <i data-lucide="rocket"></i>
+                                    <span>Deploy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Activity Feed Widget -->
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="bot"></i>
+                                <h3>AI Activity</h3>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="activity-feed" id="activityFeed">
+                                <!-- Activity items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deployments Widget -->
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="rocket"></i>
+                                <h3>Deployments</h3>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="deployment-list" id="deploymentList">
+                                <!-- Deployment items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Widget -->
+                    <div class="widget widget-large">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="bar-chart-3"></i>
+                                <h3>Analytics</h3>
+                            </div>
+                            <select class="widget-select">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 90 days</option>
+                            </select>
+                        </div>
+                        <div class="widget-content">
+                            <div class="analytics-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon blue">
+                                        <i data-lucide="eye"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Page Views</span>
+                                        <span class="stat-value counter" data-target="12534">0</span>
+                                        <span class="stat-change positive">+12%</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon purple">
+                                        <i data-lucide="zap"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-label">API Calls</span>
+                                        <span class="stat-value counter" data-target="8421">0</span>
+                                        <span class="stat-change positive">+8%</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon green">
+                                        <i data-lucide="clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Avg Load Time</span>
+                                        <span class="stat-value">1.2s</span>
+                                        <span class="stat-change negative">+0.2s</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon orange">
+                                        <i data-lucide="activity"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-label">Uptime</span>
+                                        <span class="stat-value">99.9%</span>
+                                        <span class="stat-change positive">+0.1%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="analyticsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Activity Widget (if applicable) -->
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="widget-title">
+                                <i data-lucide="users"></i>
+                                <h3>Team Activity</h3>
+                            </div>
+                        </div>
+                        <div class="widget-content">
+                            <div class="team-activity" id="teamActivity">
+                                <!-- Team activity items will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page (Hidden by default) -->
+            <div id="profilePage" class="page-content">
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar-large">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="Profile">
+                            <button class="avatar-upload">
+                                <i data-lucide="camera"></i>
+                            </button>
+                        </div>
+                        <div class="profile-header-info">
+                            <h1 class="profile-header-name" id="profileHeaderName">User Name</h1>
+                            <p class="profile-header-email" id="profileHeaderEmail">user@email.com</p>
+                            <div class="profile-badges">
+                                <span class="badge-item">🏆 First Deploy</span>
+                                <span class="badge-item">💯 100 API Calls</span>
+                                <span class="badge-item">⚡ Speed Demon</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-sections">
+                        <div class="profile-section">
+                            <h3>Active Projects</h3>
+                            <div class="project-list-simple" id="profileProjects"></div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>AI Usage Stats</h3>
+                            <div class="usage-stats">
+                                <div class="usage-stat">
+                                    <span class="usage-label">Tokens Used</span>
+                                    <span class="usage-value counter" data-target="45200">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Requests Made</span>
+                                    <span class="usage-value counter" data-target="1250">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Code Generated</span>
+                                    <span class="usage-value counter" data-target="328">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>Achievements</h3>
+                            <div class="achievements-grid" id="achievementsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings-page" class="page-content">
+                <div class="profile-container">
+                    <div class="profile-section">
+                        <h3>Dashboard Settings</h3>
+                        <p class="hero-subtitle">Toggle dashboard features and quick links. Changes persist in your browser.</p>
+
+                        <div style="margin-top:1rem; display:flex; flex-direction:column; gap:1rem;">
+                            <label style="display:flex; align-items:center; gap:0.75rem;">
+                                <input type="checkbox" id="setting_show_projects" />
+                                <span>Show "My Projects" widget & sidebar</span>
+                            </label>
+
+                            <label style="display:flex; align-items:center; gap:0.75rem;">
+                                <input type="checkbox" id="setting_show_backend" />
+                                <span>Show "Backend / APIs" sidebar item</span>
+                            </label>
+
+                            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:0.5rem;">
+                                <button class="btn-primary" id="btnEnableAll">Enable all options</button>
+                                <button class="btn-secondary" id="btnOpenAIStudio">Open AI Studio</button>
+                                <button class="btn-secondary" id="btnOpenDeployments">Open Deployments (Vercel)</button>
+                                <button class="btn-secondary" id="btnOpenTemplates">Open Templates (Figma)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- AI Chat Drawer -->
+    <div id="aiDrawer" class="ai-drawer">
+        <div class="drawer-header">
+            <h3>AI Assistant</h3>
+            <button class="drawer-close" onclick="toggleAIDrawer()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="drawer-content">
+            <div class="ai-messages" id="aiMessages">
+                <div class="ai-message assistant">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-bubble">
+                        <span class="typing-text">Hi! What do you want to build today?</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="drawer-input">
+            <input type="text" placeholder="Ask AI anything..." id="aiInput">
+            <button class="send-btn" onclick="sendAIMessage()">
+                <i data-lucide="send"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="notifications-panel">
+        <div class="panel-header">
+            <h3>Notifications</h3>
+            <button class="btn-link">Mark all as read</button>
+        </div>
+        <div class="panel-content" id="notificationsList">
+            <!-- Notifications will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="scripts/dashboard.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
