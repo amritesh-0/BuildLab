@@ -9,12 +9,9 @@
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/animations.css">
     <link rel="stylesheet" href="styles/spotlight.css">
-
+    
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/supabase.js"></script>
 </head>
 <body class="dashboard-body">
     <!-- Animated Background -->
@@ -164,7 +161,7 @@
                 <!-- Hero Section -->
                 <section class="hero-section">
                     <div class="hero-content">
-                        <h1 class="hero-title typewriter" id="welcomeText">Welcome back, <span class="highlight"></span></h1>
+                        <h1 class="hero-title typewriter" id="welcomeText">Welcome back, <span class="highlight" id="userFullName"></span></h1>
                         <p class="hero-subtitle">You've built <strong>3 projects</strong>, deployed <strong>2</strong>, and have <strong>1</strong> in draft.</p>
                     </div>
                     <div class="hero-actions">

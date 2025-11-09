@@ -6,8 +6,6 @@
     <title>Signup - BuildLab</title>
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/supabase.js"></script>
     <style>
         * {
             margin: 0;
@@ -382,25 +380,25 @@
                 <p class="signup-subtitle">Just some details to get you in.!</p>
             </div>
 
-            <form id="signupForm" onsubmit="handleSignup(event)">
+            <form id="signupForm">
                 <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
+                    <label class="form-label">Full Name</label>
+                    <input
+                        type="text"
+                        class="form-input"
                         id="username"
-                        placeholder="Enter your username"
+                        placeholder="Enter your full name"
                         required
                     >
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Email / Phone</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
+                    <label class="form-label">Email</label>
+                    <input
+                        type="email"
+                        class="form-input"
                         id="email"
-                        placeholder="Enter your email or phone"
+                        placeholder="Enter your email"
                         required
                     >
                 </div>
@@ -418,16 +416,18 @@
 
                 <div class="form-group">
                     <label class="form-label">Confirm Password</label>
-                    <input 
-                        type="password" 
-                        class="form-input" 
+                    <input
+                        type="password"
+                        class="form-input"
                         id="confirmPassword"
                         placeholder="Confirm your password"
                         required
+                        oninput="validatePasswordMatch()"
                     >
+                    <div id="passwordMatchError" class="error-message" style="display: none; color: #ff5c7a; font-size: 0.85rem; margin-top: 0.5rem;"></div>
                 </div>
 
-                <button type="submit" class="signup-button" id="signupBtn">
+                <button type="button" class="signup-button" id="signupBtn" onclick="handleSignup()">
                     Signup
                 </button>
             </form>
@@ -468,138 +468,166 @@
     </div>
 
     <script>
-        async function handleSignup(event) {
-            event.preventDefault();
+        // Make functions global
+        window.validatePasswordMatch = function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('passwordMatchError');
 
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
+            if (confirmPassword && password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        };
+
+        window.handleSignup = function() {
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const signupBtn = document.getElementById('signupBtn');
 
-            // Validate passwords match
+            // Basic validation
+            if (!username || !email || !password || !confirmPassword) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
             if (password !== confirmPassword) {
-                alert('Passwords do not match!');
+                alert('Passwords do not match.');
                 return;
             }
 
-            // Validate password strength
             if (password.length < 6) {
-                alert('Password must be at least 6 characters long');
+                alert('Password must be at least 6 characters long.');
                 return;
             }
 
-            console.log('Signup attempt:', { username, email });
+            console.log('🔄 Signup attempt for:', email, 'with username:', username);
 
             // Show loading state
             signupBtn.classList.add('loading');
             signupBtn.textContent = '';
             signupBtn.disabled = true;
 
-            try {
-                // Validate input
-                if (!username || !email || !password) {
-                    throw new Error('Please fill in all required fields');
-                }
+            // Firebase signup - will be loaded after import
+            if (window.authFunctions) {
+                window.authFunctions.signUp(email, password, username).then(result => {
+                    if (result.success) {
+                        console.log('✅ Signup successful for:', result.user.email);
 
-                // Additional validation
-                if (password.length < 6) {
-                    throw new Error('Password must be at least 6 characters long');
-                }
-
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    throw new Error('Please enter a valid email address');
-                }
-
-                // Use Supabase authentication
-                const { data, error } = await window.supabaseAuth.signUp(email, password, {
-                    name: username.trim(),
-                    full_name: username.trim(),
-                    signup_method: 'web_app'
-                });
-
-                if (error) {
-                    throw error;
-                }
-
-                if (data.user) {
-                    console.log('✅ Signup successful:', data);
-
-                    // Check if email confirmation is required
-                    if (!data.user.email_confirmed_at) {
-                        alert('Account created successfully! Please check your email and click the confirmation link to complete your signup.');
-                        // Reset form
-                        document.getElementById('signupForm').reset();
-                    } else {
-                        // Auto-login for confirmed accounts
-                        const userData = {
-                            email: data.user.email,
-                            name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+                        // Store user data in localStorage for dashboard
+                        localStorage.setItem('buildlab_user', JSON.stringify({
+                            email: result.user.email,
+                            name: result.user.displayName,
+                            uid: result.user.uid,
                             loggedIn: true,
-                            timestamp: Date.now(),
-                            supabase_id: data.user.id,
-                            created_at: data.user.created_at,
-                            last_sign_in: data.user.last_sign_in_at
-                        };
-                        localStorage.setItem('buildlab_user', JSON.stringify(userData));
+                            timestamp: Date.now()
+                        }));
 
-                        console.log('✅ Signup successful, redirecting...');
+                        console.log('🔄 Redirecting to dashboard...');
                         window.location.href = 'dashboard.html';
+                    } else {
+                        console.log('❌ Signup failed:', result.error);
+                        alert('Signup failed: ' + result.error);
+                        signupBtn.classList.remove('loading');
+                        signupBtn.textContent = 'Signup';
+                        signupBtn.disabled = false;
                     }
-                } else {
-                    throw new Error('Signup failed - please try again');
-                }
-            } catch (error) {
-                console.error('Signup error:', error);
-
-                // Provide user-friendly error messages
-                let errorMessage = 'Signup failed. Please try again.';
-                if (error.message.includes('User already registered')) {
-                    errorMessage = 'An account with this email already exists. Try logging in instead.';
-                } else if (error.message.includes('Password should be at least')) {
-                    errorMessage = 'Password must be at least 6 characters long.';
-                } else if (error.message.includes('Invalid email')) {
-                    errorMessage = 'Please enter a valid email address.';
-                } else if (error.message.includes('Signup is disabled')) {
-                    errorMessage = 'New registrations are currently disabled. Please try again later.';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-
-                alert(errorMessage);
+                }).catch(error => {
+                    console.error('❌ Unexpected signup error:', error);
+                    alert('An unexpected error occurred during signup. Please try again.');
+                    signupBtn.classList.remove('loading');
+                    signupBtn.textContent = 'Signup';
+                    signupBtn.disabled = false;
+                });
+            } else {
+                console.log('⚠️ Firebase not loaded yet');
+                alert('Firebase not loaded yet. Please wait and try again.');
                 signupBtn.classList.remove('loading');
                 signupBtn.textContent = 'Signup';
                 signupBtn.disabled = false;
             }
-        }
+        };
 
-        function handleGoogleSignup() {
-            alert('Google signup coming soon! For now, use the form to sign up.');
-        }
+        window.handleGoogleSignup = async function() {
+            try {
+                console.log('🔄 Attempting Google signup...');
+                if (!window.authFunctions) {
+                    console.log('⚠️ Firebase not loaded yet');
+                    alert('Firebase not loaded yet. Please wait and try again.');
+                    return;
+                }
+                const result = await window.authFunctions.signInWithGoogle();
+                if (result.success) {
+                    console.log('✅ Google signup successful for:', result.user.email);
 
-        function handleAppleSignup() {
+                    // Store user data
+                    localStorage.setItem('buildlab_user', JSON.stringify({
+                        email: result.user.email,
+                        name: result.user.displayName || result.user.email.split('@')[0],
+                        uid: result.user.uid,
+                        loggedIn: true,
+                        timestamp: Date.now()
+                    }));
+
+                    console.log('🔄 Redirecting to dashboard...');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    console.log('❌ Google signup failed:', result.error);
+                    alert('Google signup failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Unexpected Google signup error:', error);
+                alert('An unexpected error occurred during Google signup. Please try again.');
+            }
+        };
+
+        window.handleAppleSignup = function() {
             alert('Apple signup coming soon!');
-        }
+        };
 
-        function handleGitHubSignup() {
+        window.handleGitHubSignup = function() {
             alert('GitHub signup coming soon!');
-        }
+        };
+    </script>
+
+    <script type="module">
+        import { authFunctions } from './scripts/firebase.js';
+        window.authFunctions = authFunctions;
 
         // Check if user is already logged in
         window.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('buildlab_user');
-            if (user) {
+            // Check localStorage first for immediate redirect
+            const storedUser = localStorage.getItem('buildlab_user');
+            if (storedUser) {
                 try {
-                    const userData = JSON.parse(user);
-                    if (userData.loggedIn) {
-                        console.log('User already logged in, redirecting...');
+                    const userData = JSON.parse(storedUser);
+                    if (userData.loggedIn && userData.uid) {
+                        console.log('User found in localStorage, redirecting...');
                         window.location.href = 'dashboard.html';
+                        return;
                     }
-                } catch (error) {
-                    console.error('Error parsing user data:', error);
+                } catch (e) {
+                    console.error('Error parsing stored user data:', e);
+                    localStorage.removeItem('buildlab_user');
                 }
             }
+
+            // Then check Firebase auth state
+            if (window.authFunctions) {
+                window.authFunctions.onAuthStateChange((user) => {
+                    if (user) {
+                        console.log('User authenticated with Firebase, redirecting...');
+                        window.location.href = 'dashboard.html';
+                    }
+                });
+            }
         });
+
+
 
         // ColorBends Implementation
         (function() {

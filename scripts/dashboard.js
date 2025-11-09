@@ -24,109 +24,151 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Initialize dashboard
-async function initializeDashboard() {
-    try {
-        // Check Supabase authentication state
-        const { data: { session }, error } = await window.supabaseAuth.getCurrentSession();
+function initializeDashboard() {
+    // Check if user is logged in via Firebase
+    import('./firebase.js').then(({ authFunctions }) => {
+        authFunctions.onAuthStateChange((user) => {
+            if (!user) {
+                // Clear stale localStorage data
+                localStorage.removeItem('buildlab_user');
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+                return;
+            }
 
-        if (error) {
-            console.error('Session check error:', error);
-            window.location.href = 'login.html';
-            return;
-        }
+            // Verify session validity - check if localStorage matches Firebase user
+            const storedUser = JSON.parse(localStorage.getItem('buildlab_user') || '{}');
+            if (storedUser.uid !== user.uid || !storedUser.loggedIn) {
+                // Sync localStorage with current Firebase session, preserving existing name
+                localStorage.setItem('buildlab_user', JSON.stringify({
+                    email: user.email,
+                    name: storedUser.name || user.displayName || user.email.split('@')[0],
+                    uid: user.uid,
+                    loggedIn: true,
+                    timestamp: Date.now()
+                }));
+            }
 
-        if (!session) {
-            console.log('No active session, redirecting to login...');
-            window.location.href = 'login.html';
-            return;
-        }
+            dashboardState.user = user;
 
-        // User is authenticated
-        const user = session.user;
-        dashboardState.user = {
-            email: user.email,
-            name: user.user_metadata?.name || user.email.split('@')[0],
-            loggedIn: true,
-            timestamp: Date.now(),
-            supabase_id: user.id,
-            created_at: user.created_at,
-            last_sign_in: user.last_sign_in_at
-        };
+            // Load or initialize notifications from localStorage
+            loadStoredNotifications();
 
-        // Store in localStorage for UI purposes
-        localStorage.setItem('buildlab_user', JSON.stringify(dashboardState.user));
+            // Add login notification if this is a fresh login
+            const lastLoginTime = localStorage.getItem('buildlab_last_login');
+            const currentTime = Date.now();
+            if (!lastLoginTime || (currentTime - parseInt(lastLoginTime)) > 60000) { // More than 1 minute ago
+                addNotification('Welcome back!', `You logged in as ${user.displayName || user.email}`, 'success');
+                localStorage.setItem('buildlab_last_login', currentTime.toString());
+            }
 
-    } catch (error) {
-        console.error('Auth check error:', error);
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    // Load or initialize notifications from localStorage
-    loadStoredNotifications();
-    
-    // Add login notification if this is a fresh login
-    const lastLoginTime = localStorage.getItem('buildlab_last_login');
-    const currentTime = Date.now();
-    if (!lastLoginTime || (currentTime - parseInt(lastLoginTime)) > 60000) { // More than 1 minute ago
-        addNotification('Welcome back!', `You logged in as ${user.name || user.email}`, 'success');
-        localStorage.setItem('buildlab_last_login', currentTime.toString());
-    }
-    
-    // Update user info in UI
-    updateUserInfo();
-    
-    // Load initial data
-    loadProjects();
-    // Load settings (must happen before rendering notifications/widgets so we can hide/show parts)
-    loadSettings();
-    applySettings();
-    loadNotifications();
-    loadAIActivity();
-    loadDeployments();
-    loadAnalytics();
-    loadTeamActivity();
+            // Update user info in UI
+            updateUserInfo();
 
-    // Start activity tracking
-    startActivityTracking();
+            // Update welcome message with full name from localStorage
+            const userFullNameElement = document.getElementById('userFullName');
+            if (userFullNameElement) {
+                const storedUser = JSON.parse(localStorage.getItem('buildlab_user') || '{}');
+                userFullNameElement.textContent = storedUser.name || user.displayName || user.email.split('@')[0];
+            }
 
-    // Set up auth state listener for real-time updates
-    const { data: { subscription } } = window.supabaseAuth.onAuthStateChange((event, session) => {
-        console.log('Auth state changed:', event, session ? 'session active' : 'no session');
+            // Load initial data
+            loadProjects();
+            // Load settings (must happen before rendering notifications/widgets so we can hide/show parts)
+            loadSettings();
+            applySettings();
+            loadNotifications();
+            loadAIActivity();
+            loadDeployments();
+            loadAnalytics();
+            loadTeamActivity();
 
-        if (event === 'SIGNED_OUT' || !session) {
-            console.log('Auth state changed: signed out, redirecting...');
+            // Start activity tracking
+            startActivityTracking();
+
+            // Set up periodic session validation
+            setInterval(validateSession, 5 * 60 * 1000); // Check every 5 minutes
+        });
+    });
+}
+
+// Validate session function
+function validateSession() {
+    console.log('🔄 Validating session...');
+    import('./firebase.js').then(({ authFunctions }) => {
+        const currentUser = authFunctions.getCurrentUser();
+        const storedUser = JSON.parse(localStorage.getItem('buildlab_user') || '{}');
+
+        if (!currentUser || currentUser.uid !== storedUser.uid) {
+            console.log('❌ Session validation failed, redirecting to login...');
             localStorage.removeItem('buildlab_user');
             window.location.href = 'login.html';
-        } else if (event === 'TOKEN_REFRESHED') {
-            console.log('Token refreshed successfully');
-        } else if (event === 'SIGNED_IN') {
-            console.log('User signed in');
+        } else {
+            console.log('✅ Session valid for user:', currentUser.email);
+            // Update timestamp to keep session alive
+            storedUser.timestamp = Date.now();
+            localStorage.setItem('buildlab_user', JSON.stringify(storedUser));
         }
     });
+}
 
-    // Store subscription for cleanup if needed
-    dashboardState.authSubscription = subscription;
+// Handle logout function
+function handleLogout(event) {
+    event.preventDefault();
+
+    console.log('🔄 Starting logout process...');
+
+    // Clear all localStorage data
+    localStorage.removeItem('buildlab_user');
+    localStorage.removeItem('buildlab_last_login');
+    localStorage.removeItem('buildlab_notifications');
+    localStorage.removeItem('buildlab_settings');
+    localStorage.removeItem('buildlab_projects');
+    localStorage.removeItem('buildlab_analytics');
+    localStorage.removeItem('buildlab_deployments');
+    localStorage.removeItem('buildlab_team_activity');
+    localStorage.removeItem('buildlab_ai_activity');
+
+    console.log('🗑️ Cleared all localStorage data');
+
+    // Sign out from Firebase
+    import('./firebase.js').then(({ authFunctions }) => {
+        authFunctions.signOut().then(result => {
+            if (result.success) {
+                console.log('✅ Firebase signout successful');
+            } else {
+                console.error('❌ Firebase signout error:', result.error);
+            }
+            // Always redirect to login regardless of Firebase result
+            console.log('🔄 Redirecting to login...');
+            window.location.href = 'login.html';
+        }).catch(error => {
+            console.error('❌ Unexpected signout error:', error);
+            // Still redirect even if Firebase signout fails
+            console.log('🔄 Redirecting to login after error...');
+            window.location.href = 'login.html';
+        });
+    });
 }
 
 // Load user data
 function loadUserData() {
     const user = dashboardState.user;
-    
+
     // Update profile display
     const profileName = document.querySelector('.profile-name');
     const profilePlan = document.querySelector('.profile-plan');
     const profileAvatar = document.querySelector('.profile-avatar');
-    
-    if (profileName) profileName.textContent = user.name || 'User';
+
+    if (profileName) profileName.textContent = user.displayName || 'User';
     if (profilePlan) profilePlan.textContent = user.plan || 'Free Plan';
-    if (profileAvatar) profileAvatar.src = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.name || 'user');
-    
+    if (profileAvatar) profileAvatar.src = user.photoURL || user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.displayName || 'user');
+
     // Update hero greeting
     const heroTitle = document.querySelector('.hero-title');
     if (heroTitle) {
         const greeting = getGreeting();
-        heroTitle.innerHTML = `${greeting}, <span class="highlight typewriter">${user.name || 'there'}!</span>`;
+        heroTitle.innerHTML = `${greeting}, <span class="highlight typewriter">${user.displayName || 'there'}!</span>`;
     }
 }
 
@@ -141,15 +183,15 @@ function getGreeting() {
 // Update user info display
 function updateUserInfo() {
     const user = dashboardState.user;
-    
+
     // Update profile page
     const profileHeaderName = document.querySelector('.profile-header-name');
     const profileHeaderEmail = document.querySelector('.profile-header-email');
     const profileAvatarLarge = document.querySelector('.profile-avatar-large img');
-    
-    if (profileHeaderName) profileHeaderName.textContent = user.name || 'User';
+
+    if (profileHeaderName) profileHeaderName.textContent = user.displayName || 'User';
     if (profileHeaderEmail) profileHeaderEmail.textContent = user.email || 'user@example.com';
-    if (profileAvatarLarge) profileAvatarLarge.src = user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.name || 'user');
+    if (profileAvatarLarge) profileAvatarLarge.src = user.photoURL || user.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.displayName || 'user');
 }
 
 // Setup event listeners
@@ -240,10 +282,10 @@ function setupEventListeners() {
     }
     
     // Logout
-    const logoutBtns = document.querySelectorAll('.nav-item.logout, .dropdown-item[href="#"]');
-    logoutBtns.forEach(btn => {
-        btn.addEventListener('click', handleLogout);
-    });
+    const logoutBtn = document.querySelector('.nav-item.logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
 
     // Notifications: mark all as read button
     const markAllBtn = document.querySelector('#notificationsPanel .btn-link');
@@ -467,30 +509,45 @@ function handleSearch(e) {
     // Could search through projects, pages, etc.
 }
 
+// Validate session periodically
+function validateSession() {
+    import('./firebase.js').then(({ authFunctions }) => {
+        const currentUser = authFunctions.getCurrentUser();
+        const storedUser = JSON.parse(localStorage.getItem('buildlab_user') || '{}');
+
+        if (!currentUser || currentUser.uid !== storedUser.uid) {
+            // Session expired or invalid, redirect to login
+            console.log('❌ Session expired or invalid, redirecting to login...');
+            localStorage.removeItem('buildlab_user');
+            addNotification('Session Expired', 'Please log in again', 'warning');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+    });
+}
+
 // Handle logout
-async function handleLogout(e) {
+function handleLogout(e) {
     e.preventDefault();
 
     if (confirm('Are you sure you want to logout?')) {
-        try {
-            // Sign out from Supabase
-            const { error } = await window.supabaseAuth.signOut();
+        // Firebase sign out
+        import('./firebase.js').then(({ authFunctions }) => {
+            authFunctions.signOut().then(result => {
+                if (result.success) {
+                    // Clear local user data
+                    localStorage.removeItem('buildlab_user');
+                    localStorage.removeItem('buildlab_last_login');
 
-            if (error) {
-                console.error('Logout error:', error);
-                alert('Error logging out. Please try again.');
-                return;
-            }
-
-            // Clear local storage
-            localStorage.removeItem('buildlab_user');
-
-            // Redirect to login
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error('Logout error:', error);
-            alert('Error logging out. Please try again.');
-        }
+                    // Redirect to login
+                    window.location.href = 'login.html';
+                } else {
+                    console.error('❌ Logout error:', result.error);
+                    alert('Error logging out. Please try again.');
+                }
+            });
+        });
     }
 }
 
@@ -1164,3 +1221,5 @@ window.saveNotifications = saveNotifications;
 window.setupProject = setupProject;
 window.deleteProject = deleteProject;
 window.updateProjectCounts = updateProjectCounts;
+window.validateSession = validateSession;
+window.handleLogout = handleLogout;

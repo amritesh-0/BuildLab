@@ -4,10 +4,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Production builds
-dist/
-build/
-
 # Environment variables
 .env
 .env.local
@@ -15,7 +11,13 @@ build/
 .env.test.local
 .env.production.local
 
-# IDE and editors
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
@@ -35,21 +37,28 @@ Thumbs.db
 logs
 *.log
 
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
 # Runtime data
 pids
 *.pid
 *.seed
 *.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
 
 # Optional npm cache directory
 .npm
@@ -63,8 +72,10 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
+# dotenv environment variables file
+.env.test
+
 # parcel-bundler cache (https://parceljs.org/)
-.cache
 .parcel-cache
 
 # next.js build output
@@ -91,9 +102,75 @@ jspm_packages/
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Local Netlify folder
+.netlify
+
+# Vercel
+.vercel
+
+# Firebase functions
+functions/.firebase/
+
+# Chrome extension
+chrome-extension/
+
+# Browser extension development
+extension/
+
+# WebStorm
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+
+# Emacs
+*~
+
+# JetBrains IDEs
+.idea/
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
 # Temporary folders
 tmp/
 temp/
 
-# Local development
-.local
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Package manager lock files (uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+
+# Firebase service account keys
+serviceAccountKey.json
+firebase-adminsdk-*.json
+
+# Local development certificates
+*.pem
+*.key
+*.crt
+
+# Browser screenshots for testing
+screenshots/

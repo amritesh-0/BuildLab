@@ -6,8 +6,6 @@
     <title>Login - BuildLab</title>
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/supabase.js"></script>
     <style>
         * {
             margin: 0;
@@ -416,14 +414,14 @@
                 <p class="login-subtitle">Glad you're back.!</p>
             </div>
 
-            <form id="loginForm" onsubmit="handleLogin(event)">
+            <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label">Username</label>
-                    <input 
-                        type="text" 
-                        class="form-input" 
-                        id="username"
-                        placeholder="Enter your username"
+                    <label class="form-label">Email</label>
+                    <input
+                        type="email"
+                        class="form-input"
+                        id="email"
+                        placeholder="Enter your email"
                         required
                     >
                 </div>
@@ -444,7 +442,7 @@
                     <label for="remember">Remember Me</label>
                 </div>
 
-                <button type="submit" class="login-button" id="loginBtn">
+                <button type="button" class="login-button" id="loginBtn" onclick="handleLogin()">
                     Login
                 </button>
 
@@ -489,102 +487,170 @@
     </div>
 
     <script>
-        async function handleLogin(event) {
-            event.preventDefault();
-
-            const username = document.getElementById('username').value;
+        // Make functions global
+        window.handleLogin = function() {
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
 
-            console.log('Login attempt:', { username });
+            // Basic validation
+            if (!email || !password) {
+                alert('Please enter both email and password.');
+                return;
+            }
+
+            console.log('🔄 Login attempt for:', email);
 
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.textContent = '';
             loginBtn.disabled = true;
 
-            try {
-                // Validate input
-                if (!username || !password) {
-                    throw new Error('Please enter both email and password');
-                }
+            // Firebase login - will be loaded after import
+            if (window.authFunctions) {
+                window.authFunctions.signIn(email, password).then(result => {
+                    if (result.success) {
+                        console.log('✅ Login successful for:', result.user.email);
 
-                // Use Supabase authentication
-                const { data, error } = await window.supabaseAuth.signIn(username, password);
+                        // Store user data in localStorage for dashboard
+                        localStorage.setItem('buildlab_user', JSON.stringify({
+                            email: result.user.email,
+                            name: result.user.displayName,
+                            uid: result.user.uid,
+                            loggedIn: true,
+                            timestamp: Date.now()
+                        }));
 
-                if (error) {
-                    throw error;
-                }
-
-                if (data.user && data.session) {
-                    console.log('✅ Login successful, redirecting...');
-
-                    // Store user data in localStorage for UI purposes
-                    const userData = {
-                        email: data.user.email,
-                        name: data.user.user_metadata?.name || data.user.email.split('@')[0],
-                        loggedIn: true,
-                        timestamp: Date.now(),
-                        supabase_id: data.user.id,
-                        created_at: data.user.created_at,
-                        last_sign_in: data.user.last_sign_in_at
-                    };
-                    localStorage.setItem('buildlab_user', JSON.stringify(userData));
-
-                    // Redirect to dashboard
-                    window.location.href = 'dashboard.html';
-                } else {
-                    throw new Error('Login failed - invalid credentials');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-
-                // Provide user-friendly error messages
-                let errorMessage = 'Login failed. Please try again.';
-                if (error.message.includes('Invalid login credentials')) {
-                    errorMessage = 'Invalid email or password. Please check your credentials.';
-                } else if (error.message.includes('Email not confirmed')) {
-                    errorMessage = 'Please check your email and click the confirmation link before logging in.';
-                } else if (error.message.includes('Too many requests')) {
-                    errorMessage = 'Too many login attempts. Please wait a few minutes before trying again.';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-
-                alert(errorMessage);
+                        console.log('🔄 Redirecting to dashboard...');
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        console.log('❌ Login failed:', result.error);
+                        alert('Login failed: ' + result.error);
+                        loginBtn.classList.remove('loading');
+                        loginBtn.textContent = 'Login';
+                        loginBtn.disabled = false;
+                    }
+                }).catch(error => {
+                    console.error('❌ Unexpected login error:', error);
+                    alert('An unexpected error occurred during login. Please try again.');
+                    loginBtn.classList.remove('loading');
+                    loginBtn.textContent = 'Login';
+                    loginBtn.disabled = false;
+                });
+            } else {
+                console.log('⚠️ Firebase not loaded yet');
+                alert('Firebase not loaded yet. Please wait and try again.');
                 loginBtn.classList.remove('loading');
                 loginBtn.textContent = 'Login';
                 loginBtn.disabled = false;
             }
-        }
+        };
 
-        function handleGoogleLogin() {
-            alert('Google login coming soon! For now, use username/password login.');
-        }
+        window.handleGoogleLogin = async function() {
+            try {
+                console.log('🔄 Attempting Google login...');
+                if (!window.authFunctions) {
+                    console.log('⚠️ Firebase not loaded yet');
+                    alert('Firebase not loaded yet. Please wait and try again.');
+                    return;
+                }
+                const result = await window.authFunctions.signInWithGoogle();
+                if (result.success) {
+                    console.log('✅ Google login successful for:', result.user.email);
 
-        function handleAppleLogin() {
+                    // Store user data
+                    localStorage.setItem('buildlab_user', JSON.stringify({
+                        email: result.user.email,
+                        name: result.user.displayName || result.user.email.split('@')[0],
+                        uid: result.user.uid,
+                        loggedIn: true,
+                        timestamp: Date.now()
+                    }));
+
+                    console.log('🔄 Redirecting to dashboard...');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    console.log('❌ Google login failed:', result.error);
+                    alert('Google login failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Unexpected Google login error:', error);
+                alert('An unexpected error occurred during Google login. Please try again.');
+            }
+        };
+
+        window.handleAppleLogin = function() {
             alert('Apple login coming soon!');
-        }
+        };
 
-        function handleGitHubLogin() {
+        window.handleGitHubLogin = function() {
             alert('GitHub login coming soon!');
-        }
+        };
+
+        window.forgotPassword = function() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                alert('Please enter your email address first.');
+                return;
+            }
+
+            console.log('🔄 Sending password reset for:', email);
+
+            if (!window.authFunctions) {
+                console.log('⚠️ Firebase not loaded yet');
+                alert('Firebase not loaded yet. Please wait and try again.');
+                return;
+            }
+
+            window.authFunctions.sendPasswordReset(email).then(result => {
+                if (result.success) {
+                    console.log('✅ Password reset email sent');
+                    alert('Password reset email sent! Check your inbox.');
+                } else {
+                    console.log('❌ Password reset failed:', result.error);
+                    alert('Failed to send password reset email: ' + result.error);
+                }
+            }).catch(error => {
+                console.error('❌ Unexpected password reset error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        };
+    </script>
+
+    <script type="module">
+        import { authFunctions } from './scripts/firebase.js';
+        window.authFunctions = authFunctions;
 
         // Check if user is already logged in
         window.addEventListener('DOMContentLoaded', () => {
-            const user = localStorage.getItem('buildlab_user');
-            if (user) {
+            // Check localStorage first for immediate redirect
+            const storedUser = localStorage.getItem('buildlab_user');
+            if (storedUser) {
                 try {
-                    const userData = JSON.parse(user);
-                    if (userData.loggedIn) {
-                        console.log('User already logged in, redirecting...');
+                    const userData = JSON.parse(storedUser);
+                    if (userData.loggedIn && userData.uid) {
+                        console.log('User found in localStorage, redirecting...');
                         window.location.href = 'dashboard.html';
+                        return;
                     }
-                } catch (error) {
-                    console.error('Error parsing user data:', error);
+                } catch (e) {
+                    console.error('Error parsing stored user data:', e);
+                    localStorage.removeItem('buildlab_user');
                 }
             }
+
+            // Then check Firebase auth state
+            if (window.authFunctions) {
+                window.authFunctions.onAuthStateChange((user) => {
+                    if (user) {
+                        console.log('User authenticated with Firebase, redirecting...');
+                        window.location.href = 'dashboard.html';
+                    }
+                });
+            }
         });
+
+
 
         // ColorBends Implementation
         (function() {
