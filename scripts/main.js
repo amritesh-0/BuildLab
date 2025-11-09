@@ -4,6 +4,7 @@
 const state = {
     currentView: 'design',
     selectedComponent: null,
+    targetCursor: null,
     canvas: {
         components: [],
         zoom: 1
@@ -11,7 +12,6 @@ const state = {
     chat: {
         messages: []
     },
-    ghostCursor: null,
     generatedCode: {
         html: '',
         css: '',
@@ -34,48 +34,15 @@ window.state = state;
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
-    initializeGhostCursor();
     initializeAnimations();
     initializeScrollEffects();
     initializeBuilderInteractions();
+    initializeTargetCursor();
     // Chat is initialized by ai-assistant.js
     addMouseTrackingEffects();
     checkLoginAndAutoOpen();
     updateNavigation(); // Update navigation based on login status
 });
-
-// Initialize Ghost Cursor
-function initializeGhostCursor() {
-    // Wait for Three.js to load
-    if (typeof THREE === 'undefined' || typeof GhostCursor === 'undefined') {
-        console.warn('Three.js or GhostCursor not loaded, retrying...');
-        setTimeout(initializeGhostCursor, 100);
-        return;
-    }
-
-    try {
-        const container = document.getElementById('ghostCursorContainer');
-        if (container) {
-            state.ghostCursor = new GhostCursor(container, {
-                color: '#B19EEF',
-                brightness: 1.2,
-                edgeIntensity: 0,
-                trailLength: 50,
-                inertia: 0.5,
-                grainIntensity: 0.05,
-                bloomStrength: 0.15,
-                bloomRadius: 1.0,
-                bloomThreshold: 0.025,
-                fadeDelayMs: 1000,
-                fadeDurationMs: 1500,
-                mixBlendMode: 'screen'
-            });
-            console.log('GhostCursor initialized ✨');
-        }
-    } catch (error) {
-        console.error('Failed to initialize GhostCursor:', error);
-    }
-}
 
 // Smooth Scroll for Navigation Links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -783,5 +750,33 @@ function checkLoginAndAutoOpen() {
         }
     } else {
         console.log('ℹ️ No auto-open conditions met');
+    }
+}
+
+// Initialize Target Cursor
+function initializeTargetCursor() {
+    // Check if GSAP and TargetCursor are available
+    if (typeof gsap === 'undefined' || typeof TargetCursor === 'undefined') {
+        console.warn('GSAP or TargetCursor not loaded, retrying...');
+        setTimeout(initializeTargetCursor, 100);
+        return;
+    }
+
+    try {
+        const container = document.getElementById('targetCursorContainer');
+        if (container) {
+            state.targetCursor = new TargetCursor(container, {
+                targetSelector: '.cursor-target',
+                spinDuration: 2,
+                hideDefaultCursor: true,
+                hoverDuration: 0.2,
+                parallaxOn: true
+            });
+            console.log('✨ TargetCursor initialized');
+        } else {
+            console.warn('Target cursor container not found');
+        }
+    } catch (error) {
+        console.error('Failed to initialize TargetCursor:', error);
     }
 }

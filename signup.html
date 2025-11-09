@@ -501,8 +501,8 @@
                     
                     console.log('✅ Signup successful, redirecting...');
                     
-                    // Redirect to builder
-                    window.location.href = 'index.html?builder=open';
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
                 } else {
                     alert('Please fill all fields');
                     signupBtn.classList.remove('loading');
@@ -532,7 +532,7 @@
                     const userData = JSON.parse(user);
                     if (userData.loggedIn) {
                         console.log('User already logged in, redirecting...');
-                        window.location.href = 'index.html?builder=open';
+                        window.location.href = 'dashboard.html';
                     }
                 } catch (error) {
                     console.error('Error parsing user data:', error);

@@ -402,7 +402,7 @@
         <!-- Left side - Welcome -->
         <div class="welcome-section">
             <h1 class="welcome-title">Welcome Back !</h1>
-            <div class="welcome-subtitle">Skip the lag ?</div>
+            <div class="welcome-subtitle" onclick="window.location.href='index.html'">Skip the lag ?</div>
         </div>
 
         <!-- Right side - Login card -->
@@ -514,8 +514,8 @@
                     
                     console.log('✅ Login successful, redirecting...');
                     
-                    // Redirect to builder
-                    window.location.href = 'index.html?builder=open';
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
                 } else {
                     alert('Please enter valid credentials');
                     loginBtn.classList.remove('loading');
@@ -545,7 +545,7 @@
                     const userData = JSON.parse(user);
                     if (userData.loggedIn) {
                         console.log('User already logged in, redirecting...');
-                        window.location.href = 'index.html?builder=open';
+                        window.location.href = 'dashboard.html';
                     }
                 } catch (error) {
                     console.error('Error parsing user data:', error);

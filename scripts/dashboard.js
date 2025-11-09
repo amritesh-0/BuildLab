@@ -989,6 +989,88 @@ function createModel() {
     // Future implementation: Open database model creator
 }
 
+// Setup project function (redirects to workspace/builder)
+function setupProject(projectId) {
+    addNotification('Setting up project', 'Opening workspace builder...', 'info');
+    // Redirect to index.html with builder mode after a brief delay
+    setTimeout(() => {
+        window.location.href = 'index.html#builder';
+    }, 800);
+}
+
+// Delete project function
+function deleteProject(projectId) {
+    // Confirm deletion
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+        // Find the project card element
+        const projectCard = document.querySelector(`[data-project-id="${projectId}"]`);
+        
+        if (projectCard) {
+            // Add fade out animation
+            projectCard.style.transition = 'all 0.3s ease';
+            projectCard.style.opacity = '0';
+            projectCard.style.transform = 'scale(0.9)';
+            
+            // Remove the card after animation
+            setTimeout(() => {
+                projectCard.remove();
+                
+                // Update project count in filter buttons
+                updateProjectCounts();
+                
+                // Show success notification
+                addNotification('Project Deleted', 'The project has been removed successfully', 'success');
+                
+                // Reinitialize Lucide icons after DOM update
+                lucide.createIcons();
+            }, 300);
+        }
+    }
+}
+
+// Update project counts in filter buttons
+function updateProjectCounts() {
+    const allProjects = document.querySelectorAll('.project-card').length;
+    const deployedProjects = document.querySelectorAll('.project-card[data-status="deployed"]').length;
+    const developmentProjects = document.querySelectorAll('.project-card[data-status="development"]').length;
+    const draftProjects = document.querySelectorAll('.project-card[data-status="draft"]').length;
+    
+    // Update filter button texts
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        const filter = btn.getAttribute('data-filter');
+        if (filter === 'all') {
+            btn.textContent = `All Projects (${allProjects})`;
+        } else if (filter === 'deployed') {
+            btn.textContent = `Deployed (${deployedProjects})`;
+        } else if (filter === 'development') {
+            btn.textContent = `In Development (${developmentProjects})`;
+        } else if (filter === 'draft') {
+            btn.textContent = `Drafts (${draftProjects})`;
+        }
+    });
+    
+    // Update statistics section
+    const statCards = document.querySelectorAll('.stat-card-simple');
+    statCards.forEach(card => {
+        const statValue = card.querySelector('.stat-value-large');
+        const statLabel = card.querySelector('.stat-label-simple');
+        
+        if (statLabel) {
+            const label = statLabel.textContent.trim();
+            if (label === 'Total Projects') {
+                statValue.textContent = allProjects;
+            } else if (label === 'Deployed') {
+                statValue.textContent = deployedProjects;
+            } else if (label === 'In Development') {
+                statValue.textContent = developmentProjects;
+            } else if (label === 'Drafts') {
+                statValue.textContent = draftProjects;
+            }
+        }
+    });
+}
+
 // Export for global use
 window.dashboardState = dashboardState;
 window.toggleSidebar = toggleSidebar;
@@ -1018,3 +1100,6 @@ window.startActivityTracking = startActivityTracking;
 window.trackActivity = trackActivity;
 window.loadStoredNotifications = loadStoredNotifications;
 window.saveNotifications = saveNotifications;
+window.setupProject = setupProject;
+window.deleteProject = deleteProject;
+window.updateProjectCounts = updateProjectCounts;

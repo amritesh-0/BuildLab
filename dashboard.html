@@ -8,6 +8,7 @@
     <link rel="alternate icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/spotlight.css">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -354,13 +355,103 @@
                     </div>
 
                     <div class="profile-sections">
+                        <!-- Current Progress Section -->
                         <div class="profile-section">
-                            <h3>Active Projects</h3>
-                            <div class="project-list-simple" id="profileProjects"></div>
+                            <h3>📊 Current Progress</h3>
+                            <div class="progress-cards">
+                                <div class="progress-card">
+                                    <div class="progress-card-header">
+                                        <div class="progress-icon">🚀</div>
+                                        <div class="progress-status working">In Progress</div>
+                                    </div>
+                                    <h4 class="progress-title">E-Commerce Platform</h4>
+                                    <p class="progress-description">Building a full-stack e-commerce with payment integration</p>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 65%;"></div>
+                                    </div>
+                                    <div class="progress-meta">
+                                        <span>65% Complete</span>
+                                        <span>Updated 2 hours ago</span>
+                                    </div>
+                                </div>
+
+                                <div class="progress-card">
+                                    <div class="progress-card-header">
+                                        <div class="progress-icon">💼</div>
+                                        <div class="progress-status planning">Planning</div>
+                                    </div>
+                                    <h4 class="progress-title">Portfolio Website</h4>
+                                    <p class="progress-description">Personal portfolio with blog and project showcase</p>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar" style="width: 20%;"></div>
+                                    </div>
+                                    <div class="progress-meta">
+                                        <span>20% Complete</span>
+                                        <span>Started today</span>
+                                    </div>
+                                </div>
+
+                                <div class="progress-card">
+                                    <div class="progress-card-header">
+                                        <div class="progress-icon">✅</div>
+                                        <div class="progress-status completed">Completed</div>
+                                    </div>
+                                    <h4 class="progress-title">Todo App</h4>
+                                    <p class="progress-description">Simple task management application</p>
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar complete" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="progress-meta">
+                                        <span>100% Complete</span>
+                                        <span>Deployed 1 day ago</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="profile-section">
-                            <h3>AI Usage Stats</h3>
+                            <h3>💻 Active Projects</h3>
+                            <div class="project-list-simple" id="profileProjects">
+                                <div class="project-item-simple">
+                                    <div class="project-item-icon">🛍️</div>
+                                    <div class="project-item-info">
+                                        <div class="project-item-name">E-Commerce Platform</div>
+                                        <div class="project-item-tech">React, Node.js, MongoDB, Stripe</div>
+                                    </div>
+                                    <div class="project-item-stats">
+                                        <span class="stat-badge">65%</span>
+                                        <span class="stat-badge">12 APIs</span>
+                                    </div>
+                                </div>
+
+                                <div class="project-item-simple">
+                                    <div class="project-item-icon">🎨</div>
+                                    <div class="project-item-info">
+                                        <div class="project-item-name">Portfolio Website</div>
+                                        <div class="project-item-tech">HTML, CSS, JavaScript</div>
+                                    </div>
+                                    <div class="project-item-stats">
+                                        <span class="stat-badge">20%</span>
+                                        <span class="stat-badge">3 Pages</span>
+                                    </div>
+                                </div>
+
+                                <div class="project-item-simple">
+                                    <div class="project-item-icon">📝</div>
+                                    <div class="project-item-info">
+                                        <div class="project-item-name">Todo App</div>
+                                        <div class="project-item-tech">React, Firebase</div>
+                                    </div>
+                                    <div class="project-item-stats">
+                                        <span class="stat-badge success">✓ Live</span>
+                                        <span class="stat-badge">5 APIs</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h3>🤖 AI Usage Stats</h3>
                             <div class="usage-stats">
                                 <div class="usage-stat">
                                     <span class="usage-label">Tokens Used</span>
@@ -380,6 +471,565 @@
                         <div class="profile-section">
                             <h3>Achievements</h3>
                             <div class="achievements-grid" id="achievementsGrid"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Projects Page -->
+            <div id="projects-page" class="page-content">
+                <div class="profile-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h1>📁 My Projects</h1>
+                        <button class="btn-primary" onclick="alert('Create new project!')">+ New Project</button>
+                    </div>
+                    
+                    <div class="profile-sections">
+                        <!-- Filter Tabs -->
+                        <div class="project-filters">
+                            <button class="filter-btn active" data-filter="all">All Projects (6)</button>
+                            <button class="filter-btn" data-filter="deployed">Deployed (2)</button>
+                            <button class="filter-btn" data-filter="development">In Development (3)</button>
+                            <button class="filter-btn" data-filter="draft">Drafts (1)</button>
+                        </div>
+
+                        <!-- Projects Grid -->
+                        <div class="projects-grid">
+                            <!-- E-Commerce Platform Project -->
+                            <div class="project-card featured" data-status="development" data-project-id="1">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                        <span class="project-emoji">🛍️</span>
+                                    </div>
+                                    <div class="project-status-badge development">In Development</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">E-Commerce Platform</h3>
+                                    <p class="project-description">Full-stack online store with product catalog, shopping cart, and Stripe payment integration</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">React</span>
+                                        <span class="tech-badge">Node.js</span>
+                                        <span class="tech-badge">MongoDB</span>
+                                        <span class="tech-badge">Stripe</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 65%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 65%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Updated 2 hours ago</span>
+                                        <span><i data-lucide="git-commit"></i> 127 commits</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(1)">Open Builder</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="alert('Deploy')"><i data-lucide="rocket"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Portfolio Website Project -->
+                            <div class="project-card" data-status="deployed" data-project-id="2">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                        <span class="project-emoji">💼</span>
+                                    </div>
+                                    <div class="project-status-badge deployed">Deployed</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">Portfolio Website</h3>
+                                    <p class="project-description">Personal portfolio with project showcase, blog, and contact form</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">Next.js</span>
+                                        <span class="tech-badge">Tailwind</span>
+                                        <span class="tech-badge">MDX</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 100%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar complete" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Updated 1 day ago</span>
+                                        <span><i data-lucide="globe"></i> portfolio.dev</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(2)">View Live</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="deleteProject(2)"><i data-lucide="trash"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Task Manager App Project -->
+                            <div class="project-card" data-status="deployed" data-project-id="3">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                        <span class="project-emoji">✅</span>
+                                    </div>
+                                    <div class="project-status-badge deployed">Deployed</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">Task Manager App</h3>
+                                    <p class="project-description">Collaborative task management with real-time updates and team features</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">Vue.js</span>
+                                        <span class="tech-badge">Firebase</span>
+                                        <span class="tech-badge">Socket.io</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 100%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar complete" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Updated 3 days ago</span>
+                                        <span><i data-lucide="globe"></i> tasks.app</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(3)">View Live</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="deleteProject(3)"><i data-lucide="trash"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Social Media Dashboard Project -->
+                            <div class="project-card" data-status="development" data-project-id="4">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                        <span class="project-emoji">📱</span>
+                                    </div>
+                                    <div class="project-status-badge development">In Development</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">Social Media Dashboard</h3>
+                                    <p class="project-description">Analytics dashboard for tracking social media metrics across platforms</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">React</span>
+                                        <span class="tech-badge">Chart.js</span>
+                                        <span class="tech-badge">REST API</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 40%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 40%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Updated 5 days ago</span>
+                                        <span><i data-lucide="git-commit"></i> 58 commits</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(4)">Open Builder</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="deleteProject(4)"><i data-lucide="trash"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Weather App Project -->
+                            <div class="project-card" data-status="development" data-project-id="5">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                                        <span class="project-emoji">🌤️</span>
+                                    </div>
+                                    <div class="project-status-badge development">In Development</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">Weather App</h3>
+                                    <p class="project-description">Real-time weather forecasting app with location-based predictions</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">React Native</span>
+                                        <span class="tech-badge">OpenWeather API</span>
+                                        <span class="tech-badge">Geolocation</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 20%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 20%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Updated 1 week ago</span>
+                                        <span><i data-lucide="git-commit"></i> 23 commits</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(5)">Open Builder</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="deleteProject(5)"><i data-lucide="trash"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Blog CMS Project -->
+                            <div class="project-card" data-status="draft" data-project-id="6">
+                                <div class="project-card-header">
+                                    <div class="project-thumbnail" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                                        <span class="project-emoji">📝</span>
+                                    </div>
+                                    <div class="project-status-badge draft">Draft</div>
+                                </div>
+                                <div class="project-card-body">
+                                    <h3 class="project-title">Blog CMS</h3>
+                                    <p class="project-description">Content management system for bloggers with markdown support</p>
+                                    <div class="project-tech-stack">
+                                        <span class="tech-badge">Node.js</span>
+                                        <span class="tech-badge">Express</span>
+                                        <span class="tech-badge">PostgreSQL</span>
+                                    </div>
+                                    <div class="project-progress-info">
+                                        <span class="progress-label">Progress: 5%</span>
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar" style="width: 5%;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="project-meta">
+                                        <span><i data-lucide="calendar"></i> Created 2 weeks ago</span>
+                                        <span><i data-lucide="git-commit"></i> 7 commits</span>
+                                    </div>
+                                </div>
+                                <div class="project-card-footer">
+                                    <button class="btn-secondary" onclick="setupProject(6)">Setup Project</button>
+                                    <button class="btn-icon" onclick="alert('Project Settings')"><i data-lucide="settings"></i></button>
+                                    <button class="btn-icon" onclick="deleteProject(6)"><i data-lucide="trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Statistics -->
+                        <div class="profile-section" style="margin-top: 2rem;">
+                            <h3>📊 Project Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card-simple">
+                                    <div class="stat-icon-simple" style="background: rgba(102, 126, 234, 0.2); color: #667eea;">
+                                        <i data-lucide="folder"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value-large">6</div>
+                                        <div class="stat-label-simple">Total Projects</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card-simple">
+                                    <div class="stat-icon-simple" style="background: rgba(76, 175, 80, 0.2); color: #4caf50;">
+                                        <i data-lucide="check-circle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value-large">2</div>
+                                        <div class="stat-label-simple">Deployed</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card-simple">
+                                    <div class="stat-icon-simple" style="background: rgba(255, 152, 0, 0.2); color: #ff9800;">
+                                        <i data-lucide="code"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value-large">3</div>
+                                        <div class="stat-label-simple">In Development</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card-simple">
+                                    <div class="stat-icon-simple" style="background: rgba(158, 158, 158, 0.2); color: #9e9e9e;">
+                                        <i data-lucide="file-text"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <div class="stat-value-large">1</div>
+                                        <div class="stat-label-simple">Drafts</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backend / APIs Page -->
+            <div id="backend-page" class="page-content">
+                <div class="profile-container">
+                    <h1 style="margin-bottom: 2rem;">⚙️ Backend & APIs</h1>
+                    
+                    <div class="profile-sections">
+                        <!-- Active APIs Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3>🔗 Active APIs</h3>
+                                <button class="btn-primary" onclick="alert('Create new API endpoint!')">+ New API</button>
+                            </div>
+                            
+                            <div class="api-list">
+                                <div class="api-item">
+                                    <div class="api-header">
+                                        <div class="api-method get">GET</div>
+                                        <div class="api-endpoint">/api/products</div>
+                                        <div class="api-status active">Active</div>
+                                    </div>
+                                    <div class="api-details">
+                                        <p class="api-description">Fetch all products from the database</p>
+                                        <div class="api-meta">
+                                            <span>📊 1.2K calls today</span>
+                                            <span>⚡ 45ms avg response</span>
+                                            <span>✅ 99.9% uptime</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="api-item">
+                                    <div class="api-header">
+                                        <div class="api-method post">POST</div>
+                                        <div class="api-endpoint">/api/orders</div>
+                                        <div class="api-status active">Active</div>
+                                    </div>
+                                    <div class="api-details">
+                                        <p class="api-description">Create new order with payment processing</p>
+                                        <div class="api-meta">
+                                            <span>📊 342 calls today</span>
+                                            <span>⚡ 120ms avg response</span>
+                                            <span>✅ 100% uptime</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="api-item">
+                                    <div class="api-header">
+                                        <div class="api-method put">PUT</div>
+                                        <div class="api-endpoint">/api/users/:id</div>
+                                        <div class="api-status active">Active</div>
+                                    </div>
+                                    <div class="api-details">
+                                        <p class="api-description">Update user profile information</p>
+                                        <div class="api-meta">
+                                            <span>📊 189 calls today</span>
+                                            <span>⚡ 67ms avg response</span>
+                                            <span>✅ 99.8% uptime</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="api-item">
+                                    <div class="api-header">
+                                        <div class="api-method delete">DELETE</div>
+                                        <div class="api-endpoint">/api/cart/:id</div>
+                                        <div class="api-status warning">Rate Limited</div>
+                                    </div>
+                                    <div class="api-details">
+                                        <p class="api-description">Remove item from shopping cart</p>
+                                        <div class="api-meta">
+                                            <span>📊 89 calls today</span>
+                                            <span>⚡ 32ms avg response</span>
+                                            <span>⚠️ 95.2% uptime</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Statistics -->
+                        <div class="profile-section">
+                            <h3>📈 API Statistics</h3>
+                            <div class="usage-stats">
+                                <div class="usage-stat">
+                                    <span class="usage-label">Total Requests</span>
+                                    <span class="usage-value counter" data-target="12500">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Active Endpoints</span>
+                                    <span class="usage-value counter" data-target="12">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Avg Response Time</span>
+                                    <span class="usage-value">68ms</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Success Rate</span>
+                                    <span class="usage-value">99.3%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Authentication & Security -->
+                        <div class="profile-section">
+                            <h3>🔒 Authentication & Security</h3>
+                            <div class="security-items">
+                                <div class="security-item">
+                                    <div class="security-icon">🔑</div>
+                                    <div class="security-info">
+                                        <h4>JWT Authentication</h4>
+                                        <p>Token-based auth with 24h expiry</p>
+                                    </div>
+                                    <div class="security-status enabled">Enabled</div>
+                                </div>
+                                <div class="security-item">
+                                    <div class="security-icon">🛡️</div>
+                                    <div class="security-info">
+                                        <h4>CORS Protection</h4>
+                                        <p>Cross-origin resource sharing configured</p>
+                                    </div>
+                                    <div class="security-status enabled">Enabled</div>
+                                </div>
+                                <div class="security-item">
+                                    <div class="security-icon">⚡</div>
+                                    <div class="security-info">
+                                        <h4>Rate Limiting</h4>
+                                        <p>100 requests per minute per IP</p>
+                                    </div>
+                                    <div class="security-status enabled">Enabled</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Models Page -->
+            <div id="database-page" class="page-content">
+                <div class="profile-container">
+                    <h1 style="margin-bottom: 2rem;">🗄️ Database Models</h1>
+                    
+                    <div class="profile-sections">
+                        <!-- Active Models Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <h3>📋 Active Models</h3>
+                                <button class="btn-primary" onclick="alert('Create new model!')">+ New Model</button>
+                            </div>
+                            
+                            <div class="model-list">
+                                <div class="model-card">
+                                    <div class="model-header">
+                                        <div class="model-icon">👤</div>
+                                        <div class="model-info">
+                                            <h4>User Model</h4>
+                                            <p class="model-collection">users</p>
+                                        </div>
+                                    </div>
+                                    <div class="model-fields">
+                                        <div class="field-tag">name: String</div>
+                                        <div class="field-tag">email: String</div>
+                                        <div class="field-tag">password: String</div>
+                                        <div class="field-tag">role: Enum</div>
+                                        <div class="field-tag">createdAt: Date</div>
+                                    </div>
+                                    <div class="model-stats">
+                                        <span>📊 1,245 documents</span>
+                                        <span>🔗 3 relations</span>
+                                    </div>
+                                </div>
+
+                                <div class="model-card">
+                                    <div class="model-header">
+                                        <div class="model-icon">🛍️</div>
+                                        <div class="model-info">
+                                            <h4>Product Model</h4>
+                                            <p class="model-collection">products</p>
+                                        </div>
+                                    </div>
+                                    <div class="model-fields">
+                                        <div class="field-tag">name: String</div>
+                                        <div class="field-tag">price: Number</div>
+                                        <div class="field-tag">category: String</div>
+                                        <div class="field-tag">stock: Number</div>
+                                        <div class="field-tag">images: Array</div>
+                                    </div>
+                                    <div class="model-stats">
+                                        <span>📊 3,892 documents</span>
+                                        <span>🔗 2 relations</span>
+                                    </div>
+                                </div>
+
+                                <div class="model-card">
+                                    <div class="model-header">
+                                        <div class="model-icon">📦</div>
+                                        <div class="model-info">
+                                            <h4>Order Model</h4>
+                                            <p class="model-collection">orders</p>
+                                        </div>
+                                    </div>
+                                    <div class="model-fields">
+                                        <div class="field-tag">userId: ObjectId</div>
+                                        <div class="field-tag">items: Array</div>
+                                        <div class="field-tag">total: Number</div>
+                                        <div class="field-tag">status: Enum</div>
+                                        <div class="field-tag">paymentId: String</div>
+                                    </div>
+                                    <div class="model-stats">
+                                        <span>📊 542 documents</span>
+                                        <span>🔗 2 relations</span>
+                                    </div>
+                                </div>
+
+                                <div class="model-card">
+                                    <div class="model-header">
+                                        <div class="model-icon">💳</div>
+                                        <div class="model-info">
+                                            <h4>Payment Model</h4>
+                                            <p class="model-collection">payments</p>
+                                        </div>
+                                    </div>
+                                    <div class="model-fields">
+                                        <div class="field-tag">orderId: ObjectId</div>
+                                        <div class="field-tag">amount: Number</div>
+                                        <div class="field-tag">method: String</div>
+                                        <div class="field-tag">status: Enum</div>
+                                        <div class="field-tag">transactionId: String</div>
+                                    </div>
+                                    <div class="model-stats">
+                                        <span>📊 508 documents</span>
+                                        <span>🔗 1 relation</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database Statistics -->
+                        <div class="profile-section">
+                            <h3>💾 Database Statistics</h3>
+                            <div class="usage-stats">
+                                <div class="usage-stat">
+                                    <span class="usage-label">Total Documents</span>
+                                    <span class="usage-value counter" data-target="6187">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Collections</span>
+                                    <span class="usage-value counter" data-target="8">0</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Storage Used</span>
+                                    <span class="usage-value">247 MB</span>
+                                </div>
+                                <div class="usage-stat">
+                                    <span class="usage-label">Query Time</span>
+                                    <span class="usage-value">12ms</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Queries -->
+                        <div class="profile-section">
+                            <h3>🔍 Recent Queries</h3>
+                            <div class="query-list">
+                                <div class="query-item">
+                                    <div class="query-type">Find</div>
+                                    <div class="query-collection">users</div>
+                                    <div class="query-code">{ email: "user@example.com" }</div>
+                                    <div class="query-time">2ms</div>
+                                </div>
+                                <div class="query-item">
+                                    <div class="query-type">Aggregate</div>
+                                    <div class="query-collection">orders</div>
+                                    <div class="query-code">{ $match: { status: "completed" } }</div>
+                                    <div class="query-time">18ms</div>
+                                </div>
+                                <div class="query-item">
+                                    <div class="query-type">Update</div>
+                                    <div class="query-collection">products</div>
+                                    <div class="query-code">{ _id: "...", stock: { $inc: -1 } }</div>
+                                    <div class="query-time">5ms</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -455,10 +1105,26 @@
     </div>
 
     <!-- Scripts -->
+    <script src="scripts/SpotlightCard.js"></script>
     <script src="scripts/dashboard.js"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+        
+        // Initialize spotlight cards after everything is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    console.log('Initializing spotlight cards...');
+                    initializeSpotlightCards();
+                }, 200);
+            });
+        } else {
+            setTimeout(() => {
+                console.log('Initializing spotlight cards...');
+                initializeSpotlightCards();
+            }, 200);
+        }
     </script>
 </body>
 </html>

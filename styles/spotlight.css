@@ -1,0 +1,62 @@
+/* Spotlight Card Effect */
+
+.card-spotlight {
+    position: relative;
+    --mouse-x: 50%;
+    --mouse-y: 50%;
+    --spotlight-color: rgba(102, 126, 234, 0.15);
+}
+
+.card-spotlight::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(
+        circle 600px at var(--mouse-x) var(--mouse-y),
+        var(--spotlight-color),
+        transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.card-spotlight:hover::before,
+.card-spotlight:focus-within::before {
+    opacity: 1;
+}
+
+/* Ensure content is above spotlight */
+.card-spotlight > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Spotlight color variants */
+.spotlight-violet {
+    --spotlight-color: rgba(124, 58, 237, 0.2);
+}
+
+.spotlight-cyan {
+    --spotlight-color: rgba(14, 165, 233, 0.2);
+}
+
+.spotlight-gold {
+    --spotlight-color: rgba(250, 204, 21, 0.15);
+}
+
+.spotlight-success {
+    --spotlight-color: rgba(16, 185, 129, 0.2);
+}
+
+.spotlight-pink {
+    --spotlight-color: rgba(236, 72, 153, 0.2);
+}
+
+.spotlight-blue {
+    --spotlight-color: rgba(59, 130, 246, 0.2);
+}
